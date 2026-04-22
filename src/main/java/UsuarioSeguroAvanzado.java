@@ -1,67 +1,105 @@
-import java.util.Scanner;
+public class UsuarioSeguroAvanzado {
 
-public class Main {
+    private String username;
+    private String password;
+    private int intentosFallidos;
+    private boolean bloqueado;
+    private int maxIntentos;
+    private boolean accesoExitoso;
 
-    public static void main(String[] args) {
+    public UsuarioSeguroAvanzado(String username, String password, int maxIntentos) {
+        this.username = username;
+        this.password = password;
+        this.maxIntentos = (maxIntentos <= 0) ? 3 : maxIntentos;
+        reiniciarAcceso();
+        this.accesoExitoso = false;
+    }
 
-        Scanner sc = new Scanner(System.in);
+    // Métodos accesorios
+    public String getUsername() { return username; }
+    public int getIntentosFallidos() { return intentosFallidos; }
+    public boolean isBloqueado() { return bloqueado; }
+    public int getMaxIntentos() { return maxIntentos; }
+    public boolean isAccesoExitoso() { return accesoExitoso; }
 
-        System.out.println("=== SISTEMA DE USUARIO SEGURO ===");
+    // Métodos de negocio
 
-        System.out.print("Ingrese username: ");
-        String username = sc.nextLine();
+    public boolean autenticar(String passwordIngresada) {
+        if (!puedeIntentar()) {
+            return false;
+        }
 
-        System.out.print("Ingrese password inicial: ");
-        String password = sc.nextLine();
+        if (esPasswordCorrecta(passwordIngresada)) {
+            procesarExito();
+            return true;
+        }
 
-        System.out.print("Ingrese max intentos (ej: 3): ");
-        int maxIntentos = sc.nextInt();
-        sc.nextLine();
+        procesarFallo();
+        return false;
+    }
 
-        UsuarioSeguroAvanzado usuario = new UsuarioSeguroAvanzado(username, password, maxIntentos);
+    private boolean puedeIntentar() {
+        return !bloqueado;
+    }
 
-        int opcion;
+    private boolean esPasswordCorrecta(String passwordIngresada) {
+        return this.password.equals(passwordIngresada);
+    }
 
-        do {
-            System.out.println("\n===== MENU =====");
-            System.out.println("1. Autenticar");
-            System.out.println("2. Reiniciar acceso");
-            System.out.println("3. Cambiar contraseña");
-            System.out.println("4. Ver estado del usuario");
-            System.out.println("0. Salir");
-            System.out.print("Seleccione una opción: ");
+    private void procesarExito() {
+        intentosFallidos = 0;
+        accesoExitoso = true;
+    }
 
-            opcion = sc.nextInt();
-            sc.nextLine();
+    private void procesarFallo() {
+        intentosFallidos++;
+        if (intentosFallidos >= maxIntentos) {
+            bloqueado = true;
+        }
+    }
 
-            switch (opcion) {
+    public void reiniciarAcceso() {
+        intentosFallidos = 0;
+        bloqueado = false;
+    }
 
-                case 1:
-                    System.out.print("Ingrese contraseña: ");
-                    String passIngreso = sc.nextLine();
-                    boolean resultado = usuario.autenticar(passIngreso);
-                    if (resultado) {
-                        System.out.println("Autenticación exitosa");
-                    } else {
-                        System.out.println("Fallo de autenticación");
-                    }
-                    break;
+    public boolean cambiarPassword(String actual, String nueva) {
+        if (bloqueado || !esPasswordCorrecta(actual)) {
+            return false;
+        }
 
-                case 2:
-                    usuario.reiniciarAcceso();
-                    System.out.println("Acceso reiniciado correctamente");
-                    break;
+        if (!validarPasswordSegura(nueva)) {
+            return false;
+        }
 
-                case 3:
-                    System.out.print("Ingrese contraseña actual: ");
-                    String actual = sc.nextLine();
-                    System.out.print("Ingrese nueva contraseña: ");
-                    String nueva = sc.nextLine();
-                    boolean cambio = usuario.cambiarPassword(actual, nueva);
-                    if (cambio) {
-                        System.out.println("Contraseña cambiada correctamente");
-                    } else {
-                        System.out.println("No se pudo cambiar la contraseña");
-                    }
-                    break;
-            
+        password = nueva;
+        return true;
+    }
+
+    public boolean validarPasswordSegura(String nueva) {
+        if (nueva == null || nueva.length() < 8) {
+            return false;
+        }
+
+        boolean tieneMayuscula = false;
+        boolean tieneNumero = false;
+
+        for (int i = 0; i < nueva.length(); i++) {
+            char c = nueva.charAt(i);
+
+            if (Character.isUpperCase(c)) {
+                tieneMayuscula = true;
+            }
+
+            if (Character.isDigit(c)) {
+                tieneNumero = true;
+            }
+
+            if (tieneMayuscula && tieneNumero) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
