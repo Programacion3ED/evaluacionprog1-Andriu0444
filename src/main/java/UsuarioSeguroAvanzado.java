@@ -15,4 +15,23 @@ public class UsuarioSeguroAvanzado {
         this.accesoExitoso = false;
         this.maxIntentos = (maxIntentos <= 0) ? 3 : maxIntentos;
     }
+    public String getUsername() {
+        return username;
+    }
+
+    public int getIntentosFallidos() {
+        return intentosFallidos;
+    }
+
+    public boolean isBloqueado() {
+        return bloqueado;
+    }
+
+    public int getMaxIntentos() {
+        return maxIntentos;
+    }
+
+    public boolean isAccesoExitoso() {
+        return accesoExitoso;
+    }
 }
